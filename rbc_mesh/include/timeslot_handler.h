@@ -85,7 +85,7 @@ typedef struct
 
 
 /** @brief event handler for softdevice events */
-void ts_sd_event_handler(void);
+void rbc_mesh_sys_evt_handler(uint32_t evt);
 
 /** @brief initialize timeslot handler. Only called once */
 void timeslot_handler_init(void);
@@ -124,5 +124,7 @@ uint32_t timeslot_get_remaining_time(void);
 
 /** @brief returns the timestamp the timeslot is set to end at */
 uint32_t timeslot_get_end_time(void);
+
+void rbc_mesh_SWI0_IRQHandler(void);
 
 #endif /* _TIMESLOT_HANDLER_H__ */

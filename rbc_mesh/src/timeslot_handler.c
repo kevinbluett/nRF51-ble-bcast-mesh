@@ -244,44 +244,25 @@ static void async_event_execute(async_event_t* evt)
 *   Called whenever the softdevice tries to change the original course of actions 
 *   related to the timeslots
 */
-void ts_sd_event_handler(void)
+void rbc_mesh_sys_evt_handler(uint32_t evt)
 {
-    uint32_t evt;
-    SET_PIN(6);
-    while (sd_evt_get(&evt) == NRF_SUCCESS)
+    switch (evt)
     {
-        PIN_OUT(evt, 32);
-        switch (evt)
-        {
-            case NRF_EVT_RADIO_SESSION_IDLE:
-                
-                timeslot_order_earliest(TIMESLOT_SLOT_LENGTH, true);
-                break;
-            
-            case NRF_EVT_RADIO_SESSION_CLOSED:
-                APP_ERROR_CHECK(NRF_ERROR_INVALID_DATA);
-                
-                break;
-            
-            case NRF_EVT_RADIO_BLOCKED:
-                /* something in the softdevice is blocking our requests, 
-                go into emergency mode, where slots are short, in order to 
-                avoid complete lockout */
-                timeslot_order_earliest(TIMESLOT_SLOT_EMERGENCY_LENGTH, true);
-                break;
-            
-            case NRF_EVT_RADIO_SIGNAL_CALLBACK_INVALID_RETURN:
-                APP_ERROR_CHECK(NRF_ERROR_INVALID_DATA);
-                break;
-            
-            case NRF_EVT_RADIO_CANCELED:
-                timeslot_order_earliest(TIMESLOT_SLOT_LENGTH, true);
-                break;
-            default:
-                APP_ERROR_CHECK(NRF_ERROR_INVALID_STATE);
-        }
+        case NRF_EVT_RADIO_SESSION_IDLE:
+            timeslot_order_earliest(TIMESLOT_SLOT_LENGTH, true);
+            break;
+
+        case NRF_EVT_RADIO_BLOCKED:
+            timeslot_order_earliest(TIMESLOT_SLOT_EMERGENCY_LENGTH, true);
+            break;
+
+        case NRF_EVT_RADIO_CANCELED:
+            timeslot_order_earliest(TIMESLOT_SLOT_LENGTH, true);
+            break;
+
+        default:
+            break;
     }
-    CLEAR_PIN(6);
 }
 
 /**
@@ -305,7 +286,7 @@ static void end_timer_handler(void)
 /**
 * @brief Async event dispatcher, works in APP LOW
 */
-void SWI0_IRQHandler(void)
+void rbc_mesh_SWI0_IRQHandler(void)
 {
     while (!event_fifo_empty() && g_is_in_timeslot)
     {

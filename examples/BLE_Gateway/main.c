@@ -36,16 +36,44 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "rbc_mesh.h"
 #include "nrf_adv_conn.h"
 #include "led_config.h"
+#ifndef HEADER_H_TIMESLOT
+#define HEADER_H_TIMESLOT
 #include "timeslot_handler.h"
+#endif
+
 
 #include "nrf_soc.h"
 #include "nrf_assert.h"
 #include "nrf_sdm.h"
 #include "app_error.h"
+
 #include "nrf_delay.h"
 #include "nrf_gpio.h"
 #include "boards.h"
 #include "simple_uart.h"
+
+// DFU Support
+#include "ble.h"
+#include "ble_hci.h"
+#include "ble_srv_common.h"
+#include "ble_advdata.h"
+#include "ble_dis.h"
+#include "ble_dfu.h"
+#include "ble_hci.h"
+#include "dfu_app_handler.h"
+#include "ble_conn_params.h"
+#include "ble_conn_params.h"
+#include "boards.h"
+#include "ble_sensorsim.h"
+#include "softdevice_handler.h"
+#include "app_timer.h"
+#include "device_manager.h"
+#include "pstorage.h"
+#include "app_trace.h"
+#include "app_gpiote.h"
+//#include "softdevice_handler.h"
+
+// #include "BLEDevice.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -56,6 +84,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SET_PIN(x) NRF_GPIO->OUTSET = (1 << (x))
 #define CLEAR_PIN(x) NRF_GPIO->OUTCLR = (1 << (x))
 #define TICK_PIN(x) do { SET_PIN((x)); CLEAR_PIN((x)); }while(0)
+
+static ble_dfu_t  m_dfus;     
+
+#define DFU_REV_MAJOR                        0x00                                       /** DFU Major revision number to be exposed. */
+#define DFU_REV_MINOR                        0x01                                       /** DFU Minor revision number to be exposed. */
+#define DFU_REVISION                         ((DFU_REV_MAJOR << 8) | DFU_REV_MINOR)     /** DFU Revision number to be exposed. Combined of major and minor versions. */
+
+static uint16_t                              m_conn_handle = BLE_CONN_HANDLE_INVALID;   /**< Handle of the current connection. */
 
 
 /**
@@ -149,13 +185,17 @@ void rbc_mesh_event_handler(rbc_mesh_event_t* evt)
         case RBC_MESH_EVENT_TYPE_CONFLICTING_VAL:   
         case RBC_MESH_EVENT_TYPE_NEW_VAL:
         case RBC_MESH_EVENT_TYPE_UPDATE_VAL:
-        
+  
+					  if (evt->value_handle > 2)
+							led_config(2, 1);
             if (evt->value_handle > 2)
                 break;
             
             led_config(evt->value_handle, evt->data[0]);
             break;
     }
+		
+		led_config(1, 1);
 }
 
 
@@ -182,6 +222,41 @@ void gpio_init(void)
     led_config(2, 0);
 }
 
+static void advertising_stop(void)
+{
+    uint32_t err_code;
+
+    err_code = sd_ble_gap_adv_stop();
+    APP_ERROR_CHECK(err_code);
+
+    err_code = 0;//bsp_indication_set(BSP_INDICATE_IDLE);
+    APP_ERROR_CHECK(err_code);
+}
+
+
+/** @snippet [DFU BLE Reset prepare] */
+static void reset_prepare(void)
+{
+    uint32_t err_code;
+    
+    if (m_conn_handle != BLE_CONN_HANDLE_INVALID)
+    {
+        // Disconnect from peer.
+        err_code = sd_ble_gap_disconnect(m_conn_handle, BLE_HCI_REMOTE_USER_TERMINATED_CONNECTION);
+        APP_ERROR_CHECK(err_code);
+        err_code = 0;//bsp_indication_set(BSP_INDICATE_IDLE);
+        APP_ERROR_CHECK(err_code);
+    }
+    else
+    {
+        // If not connected, then the device will be advertising. Hence stop the advertising.
+        advertising_stop();
+    }
+
+    err_code = ble_conn_params_stop();
+    APP_ERROR_CHECK(err_code);
+}
+
 /** @brief main function */
 int main(void)
 {
@@ -203,7 +278,7 @@ int main(void)
     init_params.access_addr = 0xA541A68F;
     init_params.adv_int_ms = 100;
     init_params.channel = 38;
-    init_params.handle_count = 2;
+    init_params.handle_count = 4;
     init_params.packet_format = RBC_MESH_PACKET_FORMAT_ORIGINAL;
     init_params.radio_mode = RBC_MESH_RADIO_MODE_BLE_1MBIT;
     
@@ -216,6 +291,12 @@ int main(void)
     APP_ERROR_CHECK(error_code);
     error_code = rbc_mesh_value_enable(2);
     APP_ERROR_CHECK(error_code);
+		
+		for (int i = 3; i < 12; i++) {
+			rbc_mesh_value_enable(i);
+			uint8_t k = 0;
+			rbc_mesh_value_set(i, &k, 0);
+		}
 #endif
     /* init leds and pins */
     gpio_init();
@@ -230,6 +311,7 @@ int main(void)
     while (true)
     {
         sd_app_evt_wait();
+				//ble.waitForEvent();
     }
     
 

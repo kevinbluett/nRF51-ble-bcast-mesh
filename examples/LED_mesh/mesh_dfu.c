@@ -24,6 +24,9 @@
 #include "bootloader.h"
 #include "dfu_ble_svc_internal.h"
 #include "nrf_delay.h"
+#include "rbc_mesh.h"
+#include "mesh_dfu.h"
+#include "led_config.h"
 
 
 /**@brief     Function for handling the callback events from the dfu module.
@@ -230,6 +233,38 @@
 //     }
 // }
 
+static void rbc_event_to_mesh_packet(mesh_dfu_event_t * packet, rbc_mesh_event_t * p_evt) 
+{
+				//unsigned long mask;
+				//mask = ((1 << 28) - 1) << 27;
+	
+				//uint32_t masked = *(uint32_t *)p_evt->data & mask;
+				//masked = masked >> 27;
+	
+				//if (strstr("wtf lad", reinterpret_cast<const char*>(p_evt->data)) != NULL) {
+				//	unsigned lol = 0;
+				//}
+				//unsigned isolatedXbits = p_evt->data & mask;
+				unsigned short one = *p_evt->data;
+				one = one & 0xF8;
+				one = one >> 3;
+	
+				uint16_t t_addr = ((uint16_t) *(p_evt->data+1) << 8) | *(p_evt->data+2);
+				
+        packet->event_type = one;
+				packet->target_address = t_addr;
+        packet->data_len = p_evt->data_len;
+        packet->value_handle = p_evt->value_handle;
+        packet->data = p_evt->data;
+}
+
+void mesh_dfu_send_response(char one)
+{
+	one = one << 3;
+	uint8_t* resp;
+	*resp = one;
+	rbc_mesh_value_set(1, resp, 0);
+}
 
 /**@brief     Function for the Device Firmware Update Service event handler.
  *
@@ -239,12 +274,23 @@
  * @param[in] p_dfu     Device Firmware Update Service structure.
  * @param[in] p_evt     Event received from the Device Firmware Update Service.
  */
-static void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
+void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
 {
     uint32_t           err_code;
     ble_dfu_resp_val_t resp_val;
+		mesh_dfu_event_t mesh_packet;
 
-    switch (p_evt->ble_dfu_evt_type)
+		rbc_event_to_mesh_packet(&mesh_packet, p_evt);
+	
+		ble_gap_addr_t my_addr;
+    sd_ble_gap_address_get(&my_addr);
+    int addr = ((uint16_t) my_addr.addr[4] << 8) | (my_addr.addr[5]);
+	
+		if (mesh_packet.target_address != addr) {
+			return;
+		}
+
+    switch (mesh_packet.event_type)
     {
         case MESH_NOP:
             // No operation, channel unused.
@@ -252,6 +298,9 @@ static void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
         case MESH_CONNECTION_REQUEST:
             // Initialise connection
             // Confirmation connection: MESH_CONNECTION_REQUEST_ACK
+					led_config(2, 1);
+				  //mesh_dfu_send_response((unsigned short)MESH_CONNECTION_REQUEST_ACK);
+					break;
         case MESH_IMAGE_TRANSFER_SUCCESS:
 
             // Validate image

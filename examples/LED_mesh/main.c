@@ -51,6 +51,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "softdevice_handler.h"
 #include "timeslot_handler.h"
 #include "bsp.h"
+#include "mesh_dfu.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -152,11 +153,7 @@ void rbc_mesh_event_handler(rbc_mesh_event_t* evt)
         case RBC_MESH_EVENT_TYPE_CONFLICTING_VAL:   
         case RBC_MESH_EVENT_TYPE_NEW_VAL:
         case RBC_MESH_EVENT_TYPE_UPDATE_VAL:
-        
-            if (evt->value_handle > 2)
-                break;
-            
-            led_config(evt->value_handle, evt->data[0]);
+						mesh_dfu_packet_handler(evt);
             break;
         /*case RBC_MESH_EVENT_TYPE_INITIALIZED:
              init BLE gateway softdevice application: 

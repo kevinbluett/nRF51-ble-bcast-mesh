@@ -365,7 +365,7 @@
               <MiscControls></MiscControls>
               <Define>BOARD_PCA10000 NRF51 BLE_STACK_SUPPORT_REQD BLE_DFU_APP_SUPPORT PSTORAGE_RAW_MODE_ENABLE SOFTDEVICE_PRESENT S110</Define>
               <Undefine></Undefine>
-              <IncludePath>..\include;..\..\..\rbc_mesh;..\..\..\rbc_mesh\include</IncludePath>
+              <IncludePath>..\include;..\..\..\rbc_mesh;..\..\..\rbc_mesh\include;..\arm</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -466,12 +466,22 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>New Group</GroupName>
+          <GroupName>dfu_service</GroupName>
           <Files>
             <File>
               <FileName>dfu_ble_svc.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\..\..\..\..\Downloads\nRF51_SDK_7.1.0_372d17a\examples\dfu\bootloader\dfu_ble_svc.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>mesh_dfu</GroupName>
+          <Files>
+            <File>
+              <FileName>mesh_dfu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\mesh_dfu.c</FilePath>
             </File>
           </Files>
         </Group>

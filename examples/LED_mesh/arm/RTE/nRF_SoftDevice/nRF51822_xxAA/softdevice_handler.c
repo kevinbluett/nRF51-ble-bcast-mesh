@@ -17,7 +17,6 @@
 #include "app_util.h"
 #include "nrf_assert.h"
 #include "nrf_soc.h"
-#include "led_config.h"
 
 #if defined(ANT_STACK_SUPPORT_REQD) && defined(BLE_STACK_SUPPORT_REQD)
     #include "ant_interface.h"
@@ -65,7 +64,7 @@ void softdevice_assertion_handler(uint32_t pc, uint16_t line_num, const uint8_t 
 
 
 void intern_softdevice_events_execute(void)
-{	
+{
     if (!m_softdevice_enabled)
     {
         // SoftDevice not enabled. This can be possible if the SoftDevice was enabled by the
@@ -73,7 +72,7 @@ void intern_softdevice_events_execute(void)
 
         return;
     }
-		
+
     bool no_more_soc_evts = (m_sys_evt_handler == NULL);
 #ifdef BLE_STACK_SUPPORT_REQD
     bool no_more_ble_evts = (m_ble_evt_handler == NULL);
@@ -109,14 +108,12 @@ void intern_softdevice_events_execute(void)
         }
 
 #ifdef BLE_STACK_SUPPORT_REQD
-				
         // Fetch BLE Events.
         if (!no_more_ble_evts)
         {
-					
             // Pull event from stack
             uint16_t evt_len = m_ble_evt_buffer_size;
-						
+
             err_code = sd_ble_evt_get(mp_ble_evt_buffer, &evt_len);
             if (err_code == NRF_ERROR_NOT_FOUND)
             {

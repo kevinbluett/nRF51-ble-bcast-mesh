@@ -175,7 +175,7 @@
           </Flash1>
           <bUseTDR>1</bUseTDR>
           <Flash2>BIN\UL2CM3.DLL</Flash2>
-          <Flash3>"" ()</Flash3>
+          <Flash3></Flash3>
           <Flash4></Flash4>
           <pFcarmOut></pFcarmOut>
           <pFcarmGrp></pFcarmGrp>
@@ -224,7 +224,7 @@
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
-            <useUlib>0</useUlib>
+            <useUlib>1</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
             <RoSelD>3</RoSelD>
@@ -310,7 +310,7 @@
               <OCR_RVCT4>
                 <Type>1</Type>
                 <StartAddress>0x16000</StartAddress>
-                <Size>0x2a000</Size>
+                <Size>0x29000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -335,7 +335,7 @@
               <OCR_RVCT9>
                 <Type>0</Type>
                 <StartAddress>0x20002000</StartAddress>
-                <Size>0x2000</Size>
+                <Size>0x6000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
                 <Type>0</Type>
@@ -347,7 +347,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
+            <Optim>4</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>0</OneElfS>
@@ -487,13 +487,6 @@
         </Group>
         <Group>
           <GroupName>::Board Support</GroupName>
-          <Files>
-            <File>
-              <FileName>bsp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>RTE\Board_Support\nRF51822_xxAA\bsp.c</FilePath>
-            </File>
-          </Files>
         </Group>
         <Group>
           <GroupName>::CMSIS</GroupName>
@@ -551,11 +544,6 @@
               <FileType>5</FileType>
               <FilePath>RTE\nRF_BLE\nRF51822_xxAA\device_manager_cnfg.h</FilePath>
             </File>
-            <File>
-              <FileName>ble_dfu.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>C:\Keil_v5\ARM\PACK\NordicSemiconductor\nRF_BLE\1.1.1\ble_services\ble_dfu\ble_dfu.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -581,11 +569,31 @@
               <FileType>5</FileType>
               <FilePath>RTE\nRF_Drivers\nRF51822_xxAA\pstorage_platform.h</FilePath>
             </File>
+            <File>
+              <FileName>simple_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>RTE\nRF_Drivers\nRF51822_xxAA\simple_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>simple_uart.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>RTE\nRF_Drivers\nRF51822_xxAA\simple_uart.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
           <GroupName>::nRF_Libraries</GroupName>
           <Files>
+            <File>
+              <FileName>bootloader_util_arm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>C:\Keil_v5\ARM\PACK\NordicSemiconductor\nRF_Libraries\1.1.1\bootloader_dfu\bootloader_util_arm.c</FilePath>
+            </File>
+            <File>
+              <FileName>bootloader_settings_arm.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>C:\Keil_v5\ARM\PACK\NordicSemiconductor\nRF_Libraries\1.1.1\bootloader_dfu\bootloader_settings_arm.c</FilePath>
+            </File>
             <File>
               <FileName>app_error.c</FileName>
               <FileType>1</FileType>
@@ -595,6 +603,16 @@
               <FileName>app_error.h</FileName>
               <FileType>5</FileType>
               <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\app_error.h</FilePath>
+            </File>
+            <File>
+              <FileName>app_gpiote.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\app_gpiote.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_gpiote.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\app_gpiote.h</FilePath>
             </File>
             <File>
               <FileName>app_scheduler.c</FileName>
@@ -617,59 +635,19 @@
               <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\app_timer.h</FilePath>
             </File>
             <File>
-              <FileName>nrf_assert.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\nrf_assert.c</FilePath>
-            </File>
-            <File>
-              <FileName>nrf_assert.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\nrf_assert.h</FilePath>
-            </File>
-            <File>
-              <FileName>app_button.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\app_button.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_button.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\app_button.h</FilePath>
-            </File>
-            <File>
-              <FileName>app_gpiote.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\app_gpiote.c</FilePath>
-            </File>
-            <File>
-              <FileName>app_gpiote.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\app_gpiote.h</FilePath>
-            </File>
-            <File>
               <FileName>app_trace.h</FileName>
               <FileType>5</FileType>
               <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\app_trace.h</FilePath>
             </File>
             <File>
-              <FileName>bootloader_util_arm.c</FileName>
+              <FileName>crc16.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:\Keil_v5\ARM\PACK\NordicSemiconductor\nRF_Libraries\1.1.1\bootloader_dfu\bootloader_util_arm.c</FilePath>
+              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\crc16.c</FilePath>
             </File>
             <File>
-              <FileName>dfu_app_handler.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>C:\Keil_v5\ARM\PACK\NordicSemiconductor\nRF_Libraries\1.1.1\bootloader_dfu\experimental\dfu_app_handler.c</FilePath>
-            </File>
-            <File>
-              <FileName>bootloader_settings_arm.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>C:\Keil_v5\ARM\PACK\NordicSemiconductor\nRF_Libraries\1.1.1\bootloader_dfu\bootloader_settings_arm.c</FilePath>
-            </File>
-            <File>
-              <FileName>dfu_transport_ble.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>C:\Keil_v5\ARM\PACK\NordicSemiconductor\nRF_Libraries\1.1.1\bootloader_dfu\dfu_transport_ble.c</FilePath>
+              <FileName>crc16.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\crc16.h</FilePath>
             </File>
             <File>
               <FileName>dfu_types.h</FileName>
@@ -687,29 +665,14 @@
               <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\hci_mem_pool_internal.h</FilePath>
             </File>
             <File>
-              <FileName>bootloader.c</FileName>
+              <FileName>nrf_assert.c</FileName>
               <FileType>1</FileType>
-              <FilePath>C:\Keil_v5\ARM\PACK\NordicSemiconductor\nRF_Libraries\1.1.1\bootloader_dfu\bootloader.c</FilePath>
+              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\nrf_assert.c</FilePath>
             </File>
             <File>
-              <FileName>crc16.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\crc16.c</FilePath>
-            </File>
-            <File>
-              <FileName>crc16.h</FileName>
+              <FileName>nrf_assert.h</FileName>
               <FileType>5</FileType>
-              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\crc16.h</FilePath>
-            </File>
-            <File>
-              <FileName>dfu_init_template.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\dfu_init_template.c</FilePath>
-            </File>
-            <File>
-              <FileName>dfu_dual_bank.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>C:\Keil_v5\ARM\PACK\NordicSemiconductor\nRF_Libraries\1.1.1\bootloader_dfu\dfu_dual_bank.c</FilePath>
+              <FilePath>RTE\nRF_Libraries\nRF51822_xxAA\nrf_assert.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -736,7 +699,7 @@
           <targetInfo name="nRF51822 xxAA"/>
         </targetInfos>
       </component>
-      <component Cclass="Board Support" Cgroup="bsp" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="7.2.0" condition="bsp">
+      <component Cclass="Board Support" Cgroup="bsp" Cvariant="Defines" Cvendor="NordicSemiconductor" Cversion="7.2.0" condition="bsp_Defines">
         <package name="nRF_Examples" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Examples/" vendor="NordicSemiconductor" version="7.2.0"/>
         <targetInfos>
           <targetInfo name="nRF51822 xxAA"/>
@@ -778,12 +741,6 @@
           <targetInfo name="nRF51822 xxAA"/>
         </targetInfos>
       </component>
-      <component Cclass="nRF_BLE" Cgroup="BLE_Services" Csub="ble_dfu" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="ble_dfu">
-        <package name="nRF_BLE" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_BLE/" vendor="NordicSemiconductor" version="1.1.1"/>
-        <targetInfos>
-          <targetInfo name="nRF51822 xxAA"/>
-        </targetInfos>
-      </component>
       <component Cclass="nRF_Drivers" Cgroup="nrf_delay" Cvendor="NordicSemiconductor" Cversion="1.2.1" condition="nrf_delay">
         <package name="nRF_Drivers" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Drivers/" vendor="NordicSemiconductor" version="1.2.1"/>
         <targetInfos>
@@ -808,14 +765,8 @@
           <targetInfo name="nRF51822 xxAA"/>
         </targetInfos>
       </component>
-      <component Cclass="nRF_Libraries" Cgroup="DFU" Csub="dfu_app_handler" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="dfu_app_handler">
-        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
-        <targetInfos>
-          <targetInfo name="nRF51822 xxAA"/>
-        </targetInfos>
-      </component>
-      <component Cclass="nRF_Libraries" Cgroup="DFU" Csub="dfu_bootloader" Cvariant="Dual_bank" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="dfu_bootloader_Dual_bank">
-        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+      <component Cclass="nRF_Drivers" Cgroup="simple_uart" Cvendor="NordicSemiconductor" Cversion="1.2.1" condition="simple_uart">
+        <package name="nRF_Drivers" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Drivers/" vendor="NordicSemiconductor" version="1.2.1"/>
         <targetInfos>
           <targetInfo name="nRF51822 xxAA"/>
         </targetInfos>
@@ -827,18 +778,6 @@
         </targetInfos>
       </component>
       <component Cclass="nRF_Libraries" Cgroup="DFU" Csub="dfu_bootloader_util" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="dfu_bootloader_util">
-        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
-        <targetInfos>
-          <targetInfo name="nRF51822 xxAA"/>
-        </targetInfos>
-      </component>
-      <component Cclass="nRF_Libraries" Cgroup="DFU" Csub="dfu_transport" Cvariant="Ble" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="dfu_transport_Ble">
-        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
-        <targetInfos>
-          <targetInfo name="nRF51822 xxAA"/>
-        </targetInfos>
-      </component>
-      <component Cclass="nRF_Libraries" Cgroup="app_button" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_button">
         <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
         <targetInfos>
           <targetInfo name="nRF51822 xxAA"/>
@@ -919,12 +858,22 @@
     </components>
     <files>
       <file attr="config" category="source" name="bsp\bsp.c">
-        <instance index="0">RTE\Board_Support\nRF51822_xxAA\bsp.c</instance>
+        <instance index="0" removed="1">RTE\Board_Support\nRF51822_xxAA\bsp.c</instance>
         <component Cclass="Board Support" Cgroup="bsp" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="7.2.0" condition="bsp"/>
         <package name="nRF_Examples" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Examples/" vendor="NordicSemiconductor" version="7.2.0"/>
-        <targetInfos>
-          <targetInfo name="nRF51822 xxAA"/>
-        </targetInfos>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="source" condition="ARM Compiler" name="Device\Source\arm\arm_startup_nrf51.s">
+        <instance index="0" removed="1">RTE\Device\nRF51422_xxAC\arm_startup_nrf51.s</instance>
+        <component Cclass="Device" Cgroup="Startup" Cvendor="NordicSemiconductor" Cversion="1.0.1" condition="nRF51 Series CMSIS Device"/>
+        <package name="nRF_DeviceFamilyPack" schemaVersion="1.0" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_DeviceFamilyPack/" vendor="NordicSemiconductor" version="1.1.4"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="source" name="Device\Source\system_nrf51.c">
+        <instance index="0" removed="1">RTE\Device\nRF51422_xxAC\system_nrf51.c</instance>
+        <component Cclass="Device" Cgroup="Startup" Cvendor="NordicSemiconductor" Cversion="1.0.1" condition="nRF51 Series CMSIS Device"/>
+        <package name="nRF_DeviceFamilyPack" schemaVersion="1.0" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_DeviceFamilyPack/" vendor="NordicSemiconductor" version="1.1.4"/>
+        <targetInfos/>
       </file>
       <file attr="config" category="source" condition="ARM Compiler" name="Device\Source\arm\arm_startup_nrf51.s">
         <instance index="0">RTE\Device\nRF51822_xxAA\arm_startup_nrf51.s</instance>
@@ -941,6 +890,36 @@
         <targetInfos>
           <targetInfo name="nRF51822 xxAA"/>
         </targetInfos>
+      </file>
+      <file attr="config" category="source" name="common\ble_advdata.c">
+        <instance index="0" removed="1">RTE\nRF_BLE\nRF51422_xxAC\ble_advdata.c</instance>
+        <component Cclass="nRF_BLE" Cgroup="BLE_Modules" Csub="ble_advdata" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="ble_advdata"/>
+        <package name="nRF_BLE" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_BLE/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="common\ble_advdata.h">
+        <instance index="0" removed="1">RTE\nRF_BLE\nRF51422_xxAC\ble_advdata.h</instance>
+        <component Cclass="nRF_BLE" Cgroup="BLE_Modules" Csub="ble_advdata" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="ble_advdata"/>
+        <package name="nRF_BLE" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_BLE/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="source" name="common\ble_conn_params.c">
+        <instance index="0" removed="1">RTE\nRF_BLE\nRF51422_xxAC\ble_conn_params.c</instance>
+        <component Cclass="nRF_BLE" Cgroup="BLE_Modules" Csub="ble_conn_params" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="ble_conn_params"/>
+        <package name="nRF_BLE" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_BLE/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="common\ble_conn_params.h">
+        <instance index="0" removed="1">RTE\nRF_BLE\nRF51422_xxAC\ble_conn_params.h</instance>
+        <component Cclass="nRF_BLE" Cgroup="BLE_Modules" Csub="ble_conn_params" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="ble_conn_params"/>
+        <package name="nRF_BLE" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_BLE/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="device_manager\config\device_manager_cnfg.h">
+        <instance index="0" removed="1">RTE\nRF_BLE\nRF51422_xxAC\device_manager_cnfg.h</instance>
+        <component Cclass="nRF_BLE" Cgroup="BLE_Modules" Csub="device_manager" Cvariant="Peripheral" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="device_manager_Peripheral"/>
+        <package name="nRF_BLE" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_BLE/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
       </file>
       <file attr="config" category="source" name="common\ble_advdata.c">
         <instance index="0">RTE\nRF_BLE\nRF51822_xxAA\ble_advdata.c</instance>
@@ -983,6 +962,36 @@
         </targetInfos>
       </file>
       <file attr="config" category="source" name="pstorage\pstorage.c">
+        <instance index="0" removed="1">RTE\nRF_Drivers\nRF51422_xxAC\pstorage.c</instance>
+        <component Cclass="nRF_Drivers" Cgroup="pstorage" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="1.2.1" condition="pstorage"/>
+        <package name="nRF_Drivers" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Drivers/" vendor="NordicSemiconductor" version="1.2.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="pstorage\pstorage.h">
+        <instance index="0" removed="1">RTE\nRF_Drivers\nRF51422_xxAC\pstorage.h</instance>
+        <component Cclass="nRF_Drivers" Cgroup="pstorage" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="1.2.1" condition="pstorage"/>
+        <package name="nRF_Drivers" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Drivers/" vendor="NordicSemiconductor" version="1.2.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="pstorage\config\pstorage_platform.h">
+        <instance index="0" removed="1">RTE\nRF_Drivers\nRF51422_xxAC\pstorage_platform.h</instance>
+        <component Cclass="nRF_Drivers" Cgroup="pstorage" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="1.2.1" condition="pstorage"/>
+        <package name="nRF_Drivers" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Drivers/" vendor="NordicSemiconductor" version="1.2.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="source" name="simple_uart\simple_uart.c">
+        <instance index="0" removed="1">RTE\nRF_Drivers\nRF51422_xxAC\simple_uart.c</instance>
+        <component Cclass="nRF_Drivers" Cgroup="simple_uart" Cvendor="NordicSemiconductor" Cversion="1.2.1" condition="simple_uart"/>
+        <package name="nRF_Drivers" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Drivers/" vendor="NordicSemiconductor" version="1.2.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="simple_uart\simple_uart.h">
+        <instance index="0" removed="1">RTE\nRF_Drivers\nRF51422_xxAC\simple_uart.h</instance>
+        <component Cclass="nRF_Drivers" Cgroup="simple_uart" Cvendor="NordicSemiconductor" Cversion="1.2.1" condition="simple_uart"/>
+        <package name="nRF_Drivers" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Drivers/" vendor="NordicSemiconductor" version="1.2.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="source" name="pstorage\pstorage.c">
         <instance index="0">RTE\nRF_Drivers\nRF51822_xxAA\pstorage.c</instance>
         <component Cclass="nRF_Drivers" Cgroup="pstorage" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="1.2.1" condition="pstorage"/>
         <package name="nRF_Drivers" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Drivers/" vendor="NordicSemiconductor" version="1.2.1"/>
@@ -1007,32 +1016,128 @@
         </targetInfos>
       </file>
       <file attr="config" category="source" name="simple_uart\simple_uart.c">
-        <instance index="0" removed="1">RTE\nRF_Drivers\nRF51822_xxAA\simple_uart.c</instance>
+        <instance index="0">RTE\nRF_Drivers\nRF51822_xxAA\simple_uart.c</instance>
         <component Cclass="nRF_Drivers" Cgroup="simple_uart" Cvendor="NordicSemiconductor" Cversion="1.2.1" condition="simple_uart"/>
         <package name="nRF_Drivers" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Drivers/" vendor="NordicSemiconductor" version="1.2.1"/>
-        <targetInfos/>
+        <targetInfos>
+          <targetInfo name="nRF51822 xxAA"/>
+        </targetInfos>
       </file>
       <file attr="config" category="header" name="simple_uart\simple_uart.h">
-        <instance index="0" removed="1">RTE\nRF_Drivers\nRF51822_xxAA\simple_uart.h</instance>
+        <instance index="0">RTE\nRF_Drivers\nRF51822_xxAA\simple_uart.h</instance>
         <component Cclass="nRF_Drivers" Cgroup="simple_uart" Cvendor="NordicSemiconductor" Cversion="1.2.1" condition="simple_uart"/>
         <package name="nRF_Drivers" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Drivers/" vendor="NordicSemiconductor" version="1.2.1"/>
+        <targetInfos>
+          <targetInfo name="nRF51822 xxAA"/>
+        </targetInfos>
+      </file>
+      <file attr="config" category="source" name="util\app_error.c">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\app_error.c</instance>
+        <component Cclass="nRF_Libraries" Cgroup="app_error" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_error"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="util\app_error.h">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\app_error.h</instance>
+        <component Cclass="nRF_Libraries" Cgroup="app_error" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_error"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="source" name="gpiote\app_gpiote.c">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\app_gpiote.c</instance>
+        <component Cclass="nRF_Libraries" Cgroup="app_gpiote" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_gpiote"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="gpiote\app_gpiote.h">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\app_gpiote.h</instance>
+        <component Cclass="nRF_Libraries" Cgroup="app_gpiote" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_gpiote"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="source" name="scheduler\app_scheduler.c">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\app_scheduler.c</instance>
+        <component Cclass="nRF_Libraries" Cgroup="app_scheduler" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_scheduler"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="scheduler\app_scheduler.h">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\app_scheduler.h</instance>
+        <component Cclass="nRF_Libraries" Cgroup="app_scheduler" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_scheduler"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="source" name="timer\app_timer.c">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\app_timer.c</instance>
+        <component Cclass="nRF_Libraries" Cgroup="app_timer" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_timer"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="timer\app_timer.h">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\app_timer.h</instance>
+        <component Cclass="nRF_Libraries" Cgroup="app_timer" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_timer"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="trace\app_trace.h">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\app_trace.h</instance>
+        <component Cclass="nRF_Libraries" Cgroup="app_trace" Cvariant="Dummy" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_trace_Dummy"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="source" name="crc16\crc16.c">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\crc16.c</instance>
+        <component Cclass="nRF_Libraries" Cgroup="crc16" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="crc16"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="crc16\crc16.h">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\crc16.h</instance>
+        <component Cclass="nRF_Libraries" Cgroup="crc16" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="crc16"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="bootloader_dfu\dfu_types.h">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\dfu_types.h</instance>
+        <component Cclass="nRF_Libraries" Cgroup="DFU" Csub="dfu_bootloader_settings" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="dfu_bootloader_settings"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="source" name="hci\hci_mem_pool.c">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\hci_mem_pool.c</instance>
+        <component Cclass="nRF_Libraries" Cgroup="hci_mem_pool" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="hci_mem_pool"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="hci\config\hci_mem_pool_internal.h">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\hci_mem_pool_internal.h</instance>
+        <component Cclass="nRF_Libraries" Cgroup="hci_mem_pool" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="hci_mem_pool"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="source" name="util\nrf_assert.c">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\nrf_assert.c</instance>
+        <component Cclass="nRF_Libraries" Cgroup="nrf_assert" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="nrf_assert"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
+      </file>
+      <file attr="config" category="header" name="util\nrf_assert.h">
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51422_xxAC\nrf_assert.h</instance>
+        <component Cclass="nRF_Libraries" Cgroup="nrf_assert" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="nrf_assert"/>
+        <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
         <targetInfos/>
       </file>
       <file attr="config" category="source" name="button\app_button.c">
-        <instance index="0">RTE\nRF_Libraries\nRF51822_xxAA\app_button.c</instance>
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51822_xxAA\app_button.c</instance>
         <component Cclass="nRF_Libraries" Cgroup="app_button" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_button"/>
         <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
-        <targetInfos>
-          <targetInfo name="nRF51822 xxAA"/>
-        </targetInfos>
+        <targetInfos/>
       </file>
       <file attr="config" category="header" name="button\app_button.h">
-        <instance index="0">RTE\nRF_Libraries\nRF51822_xxAA\app_button.h</instance>
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51822_xxAA\app_button.h</instance>
         <component Cclass="nRF_Libraries" Cgroup="app_button" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_button"/>
         <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
-        <targetInfos>
-          <targetInfo name="nRF51822 xxAA"/>
-        </targetInfos>
+        <targetInfos/>
       </file>
       <file attr="config" category="source" name="util\app_error.c">
         <instance index="0">RTE\nRF_Libraries\nRF51822_xxAA\app_error.c</instance>
@@ -1106,7 +1211,7 @@
       </file>
       <file attr="config" category="header" name="trace\app_trace.h">
         <instance index="0">RTE\nRF_Libraries\nRF51822_xxAA\app_trace.h</instance>
-        <component Cclass="nRF_Libraries" Cgroup="app_trace" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_trace"/>
+        <component Cclass="nRF_Libraries" Cgroup="app_trace" Cvariant="Dummy" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="app_trace_Dummy"/>
         <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
         <targetInfos>
           <targetInfo name="nRF51822 xxAA"/>
@@ -1129,12 +1234,10 @@
         </targetInfos>
       </file>
       <file attr="config" category="source" name="bootloader_dfu\dfu_init_template.c">
-        <instance index="0">RTE\nRF_Libraries\nRF51822_xxAA\dfu_init_template.c</instance>
+        <instance index="0" removed="1">RTE\nRF_Libraries\nRF51822_xxAA\dfu_init_template.c</instance>
         <component Cclass="nRF_Libraries" Cgroup="DFU" Csub="dfu_bootloader" Cvariant="Single_bank" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="dfu_bootloader_Single_bank"/>
         <package name="nRF_Libraries" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_Libraries/" vendor="NordicSemiconductor" version="1.1.1"/>
-        <targetInfos>
-          <targetInfo name="nRF51822 xxAA"/>
-        </targetInfos>
+        <targetInfos/>
       </file>
       <file attr="config" category="header" name="bootloader_dfu\dfu_types.h">
         <instance index="0">RTE\nRF_Libraries\nRF51822_xxAA\dfu_types.h</instance>
@@ -1175,6 +1278,12 @@
         <targetInfos>
           <targetInfo name="nRF51822 xxAA"/>
         </targetInfos>
+      </file>
+      <file attr="config" category="source" name="softdevice_handler\softdevice_handler.c">
+        <instance index="0" removed="1">RTE\nRF_SoftDevice\nRF51422_xxAC\softdevice_handler.c</instance>
+        <component Cclass="nRF_SoftDevice" Cgroup="Internal" Csub="sd_common" Cvariant="default" Cvendor="NordicSemiconductor" Cversion="1.1.1" condition="sd_common"/>
+        <package name="nRF_SoftDevice_Common" schemaVersion="1.2" supportContact="http://www.nordicsemi.com/About-us/Contact-us" url="http://developer.nordicsemi.com/nRF51_SDK/pieces/nRF_SoftDevice_Common/" vendor="NordicSemiconductor" version="1.1.1"/>
+        <targetInfos/>
       </file>
       <file attr="config" category="source" name="softdevice_handler\softdevice_handler.c">
         <instance index="0">RTE\nRF_SoftDevice\nRF51822_xxAA\softdevice_handler.c</instance>

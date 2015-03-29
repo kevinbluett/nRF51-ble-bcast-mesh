@@ -1,5 +1,3 @@
-#include "dfu_transport.h"
-#include "dfu.h"
 #include "dfu_types.h"
 #include <stddef.h>
 #include <string.h>
@@ -10,24 +8,33 @@
 #include "app_util.h"
 #include "app_error.h"
 #include "softdevice_handler.h"
-#include "ble_stack_handler_types.h"
-#include "ble_advdata.h"
-#include "ble_l2cap.h"
-#include "ble_gap.h"
-#include "ble_gatt.h"
 #include "ble_hci.h"
-#include "ble_dfu.h"
 #include "nordic_common.h"
 #include "app_timer.h"
 #include "ble_conn_params.h"
 #include "hci_mem_pool.h"
 #include "bootloader.h"
+#include "pstorage.h"
 #include "dfu_ble_svc_internal.h"
 #include "nrf_delay.h"
 #include "rbc_mesh.h"
 #include "mesh_dfu.h"
 #include "led_config.h"
 
+static mesh_state_t                 m_mesh_state;                /**< Current DFU state. */
+static uint32_t                     m_image_size;               /**< Size of the image that will be transmitted. */
+
+static dfu_start_packet_t           m_start_packet;             /**< Start packet received for this update procedure. Contains update mode and image sizes information to be used for image transfer. */
+static uint8_t                      m_init_packet[64];          /**< Init packet, can hold CRC, Hash, Signed Hash and similar, for image validation, integrety check and authorization checking. */ 
+static uint8_t                      m_init_packet_length;       /**< Length of init packet received. */
+static uint16_t                     m_image_crc;                /**< Calculated CRC of the image received. */
+static uint32_t             				m_num_of_firmware_bytes_rcvd; 
+static uint32_t                     m_data_received;
+
+static pstorage_handle_t            m_storage_handle_swap;      /**< Pstorage handle for the swap area (bank 1). Bank used when updating an application or bootloader without SoftDevice. */
+static pstorage_handle_t          * mp_storage_handle_active;   /**< Pointer to the pstorage handle for the active bank for receiving of data packets. */
+
+static uint8_t * mp_rx_buffer;
 
 /**@brief     Function for handling the callback events from the dfu module.
  *            Callbacks are expected when \ref dfu_data_pkt_handle has been executed.
@@ -145,93 +152,142 @@
 //  * @param[in] p_dfu     DFU Service Structure.
 //  * @param[in] p_evt     Pointer to the event received from the S110 SoftDevice.
 //  */
-// static void app_data_process(ble_dfu_t * p_dfu, ble_dfu_evt_t * p_evt)
-// {
-//     uint32_t err_code;
+static void app_data_process(uint8_t addr, uint8_t packet_id, uint8_t * p_data_packet, uint32_t length) {
+    uint32_t err_code;
 
-//     if ((p_evt->evt.ble_dfu_pkt_write.len & (sizeof(uint32_t) - 1)) != 0)
-//     {
-//         // Data length is not a multiple of 4 (word size).
-//         return;
-//     }
-
-//     uint32_t length = p_evt->evt.ble_dfu_pkt_write.len;
+    if ((length & (sizeof(uint32_t) - 1)) != 0) {
+        // Data length is not a multiple of 4 (word size).
+        return;
+    }
     
-//     err_code = hci_mem_pool_rx_produce(length, (void**) &mp_rx_buffer);
-//     if (err_code != NRF_SUCCESS)
-//     {
-//         return;
-//     }
+    err_code = hci_mem_pool_rx_produce(length, (void**) &mp_rx_buffer);
+    if (err_code != NRF_SUCCESS) {
+        return;
+    }
+
+    memcpy(mp_rx_buffer, p_data_packet, length);
+
+    err_code = hci_mem_pool_rx_data_size_set(length);
+    if (err_code != NRF_SUCCESS) {
+        return;
+    }
+
+		err_code = hci_mem_pool_rx_extract(&mp_rx_buffer, &length);
+		if (err_code != NRF_SUCCESS) {
+			return;
+    }
+
+    mesh_update_packet_t mesh_pkt;
+
+		mesh_pkt.packet_type                      = DATA_PACKET;
+		mesh_pkt.params.data_packet.packet_length = length / sizeof(uint32_t);
+		mesh_pkt.params.data_packet.p_data_packet = (uint32_t*)mp_rx_buffer;
     
-//     uint8_t * p_data_packet = p_evt->evt.ble_dfu_pkt_write.p_data;
+    err_code = mesh_data_pkt_handle(&mesh_pkt);
 
-//     memcpy(mp_rx_buffer, p_data_packet, length);
+    if (err_code == NRF_SUCCESS)
+    {
+        // All the expected firmware data has been received and processed successfully.
+        m_num_of_firmware_bytes_rcvd += length;
 
-//     err_code = hci_mem_pool_rx_data_size_set(length);
-//     if (err_code != NRF_SUCCESS)
-//     {
-//         return;
-//     }
+				mesh_dfu_send_response(packet_id, (unsigned short)MESH_IMAGE_TRANSFER_SUCCESS, addr);
+     }
+     else if (err_code == NRF_ERROR_INVALID_LENGTH)
+     {
+         // Firmware data packet was handled successfully. And more firmware data is expected.
+         m_num_of_firmware_bytes_rcvd += length;
 
-//     err_code = hci_mem_pool_rx_extract(&mp_rx_buffer, &length);
-//     if (err_code != NRF_SUCCESS)
-//     {
-//         return;
-//     }
+         mesh_dfu_send_response(packet_id, (unsigned short)MESH_CONNECTION_REQUEST_ACK, addr);
+    }
+    else
+    {
+				//Let's pretend errors don't exist for the time being
+        uint32_t hci_error = hci_mem_pool_rx_consume(mp_rx_buffer);
+        if (hci_error != NRF_SUCCESS)
+        {
+					// Process error
+        }
+    }
+}
 
-//     dfu_update_packet_t dfu_pkt;
+uint32_t mesh_data_pkt_handle(mesh_update_packet_t * p_packet)
+{
+    uint32_t   data_length;
+    uint32_t   err_code;
+    uint32_t * p_data;
 
-//     dfu_pkt.packet_type                      = DATA_PACKET;
-//     dfu_pkt.params.data_packet.packet_length = length / sizeof(uint32_t);
-//     dfu_pkt.params.data_packet.p_data_packet = (uint32_t*)mp_rx_buffer;
-    
-//     err_code = dfu_data_pkt_handle(&dfu_pkt);
+    if (p_packet == NULL)
+    {
+        return NRF_ERROR_NULL;
+    }
 
-//     if (err_code == NRF_SUCCESS)
-//     {
-//         // All the expected firmware data has been received and processed successfully.
+    // Check pointer alignment.
+    if (!is_word_aligned(p_packet->params.data_packet.p_data_packet))
+    {
+        // The p_data_packet is not word aligned address.
+        return NRF_ERROR_INVALID_ADDR;
+    }
 
-//         m_num_of_firmware_bytes_rcvd += p_evt->evt.ble_dfu_pkt_write.len;
+    switch (m_mesh_state)
+    {
+        case MESH_STATE_RDY:
+        case MESH_STATE_RX_INIT_PKT:
+            return NRF_ERROR_INVALID_STATE;
 
-//         // Notify the DFU Controller about the success about the procedure.
-//         err_code = ble_dfu_response_send(p_dfu,
-//                                          BLE_DFU_RECEIVE_APP_PROCEDURE,
-//                                          BLE_DFU_RESP_VAL_SUCCESS);
-//         APP_ERROR_CHECK(err_code);
-//     }
-//     else if (err_code == NRF_ERROR_INVALID_LENGTH)
-//     {
-//         // Firmware data packet was handled successfully. And more firmware data is expected.
-//         m_num_of_firmware_bytes_rcvd += p_evt->evt.ble_dfu_pkt_write.len;
+        case MESH_STATE_RX_DATA_PKT:
+            data_length = p_packet->params.data_packet.packet_length * sizeof(uint32_t);
 
-//         // Check if a packet receipt notification is needed to be sent.
-//         if (m_pkt_rcpt_notif_enabled)
-//         {
-//             // Decrement the counter for the number firmware packets needed for sending the
-//             // next packet receipt notification.
-//             m_pkt_notif_target_cnt--;
+            if ((m_data_received + data_length) > m_image_size)
+            {
+                // The caller is trying to write more bytes into the flash than the size provided to
+                // the dfu_image_size_set function. This is treated as a serious error condition and
+                // an unrecoverable one. Hence point the variable mp_app_write_address to the top of
+                // the flash area. This will ensure that all future application data packet writes
+                // will be blocked because of the above check.
+                m_data_received = 0xFFFFFFFF;
 
-//             if (m_pkt_notif_target_cnt == 0)
-//             {
-//                 err_code = ble_dfu_pkts_rcpt_notify(p_dfu, m_num_of_firmware_bytes_rcvd);
-//                 APP_ERROR_CHECK(err_code);
+                return NRF_ERROR_DATA_SIZE;
+            }
 
-//                 // Reset the counter for the number of firmware packets.
-//                 m_pkt_notif_target_cnt = m_pkt_notif_target;
-//             }
-//         }
-//     }
-//     else
-//     {
-//         uint32_t hci_error = hci_mem_pool_rx_consume(mp_rx_buffer);
-//         if (hci_error != NRF_SUCCESS)
-//         {
-//             dfu_error_notify(p_dfu, hci_error);
-//         }
-        
-//         dfu_error_notify(p_dfu, err_code);
-//     }
-// }
+            // Valid peer activity detected. Hence restart the DFU timer.
+            //err_code = dfu_timer_restart();
+            //if (err_code != NRF_SUCCESS)
+            //{
+            //    return err_code;
+            //}
+
+            p_data = (uint32_t *)p_packet->params.data_packet.p_data_packet;
+
+            err_code = pstorage_raw_store(mp_storage_handle_active,
+                                          (uint8_t *)p_data,
+                                          data_length,
+                                          m_data_received);
+            if (err_code != NRF_SUCCESS)
+            {
+                return err_code;
+            }
+
+            m_data_received += data_length;
+
+            if (m_data_received != m_image_size)
+            {
+                // The entire image is not received yet. More data is expected.
+                err_code = NRF_ERROR_INVALID_LENGTH;
+            }
+            else
+            {
+                // The entire image has been received. Return NRF_SUCCESS.
+                err_code = NRF_SUCCESS;
+            }
+            break;
+
+        default:
+            err_code = NRF_ERROR_INVALID_STATE;
+            break;
+    }
+
+    return err_code;
+}
 
 static void rbc_event_to_mesh_packet(mesh_dfu_event_t * packet, rbc_mesh_event_t * p_evt) 
 {
@@ -258,12 +314,20 @@ static void rbc_event_to_mesh_packet(mesh_dfu_event_t * packet, rbc_mesh_event_t
         packet->data = p_evt->data;
 }
 
-void mesh_dfu_send_response(char one)
+void mesh_dfu_send_response(uint8_t channel, char one, int addr)//, uint16_t addr)
 {
 	one = one << 3;
-	uint8_t* resp;
-	*resp = one;
-	rbc_mesh_value_set(1, resp, 0);
+	uint8_t resp[28];
+	
+	resp[0] = one;
+	resp[1] = (addr >> 8);
+	resp[2] = addr;
+	
+	for (int i = 3; i < 28; i++) {
+			resp[i] = 0xFF;
+	}
+	
+	rbc_mesh_value_set(channel, resp, 28);
 }
 
 /**@brief     Function for the Device Firmware Update Service event handler.
@@ -277,7 +341,6 @@ void mesh_dfu_send_response(char one)
 void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
 {
     uint32_t           err_code;
-    ble_dfu_resp_val_t resp_val;
 		mesh_dfu_event_t mesh_packet;
 
 		rbc_event_to_mesh_packet(&mesh_packet, p_evt);
@@ -298,8 +361,9 @@ void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
         case MESH_CONNECTION_REQUEST:
             // Initialise connection
             // Confirmation connection: MESH_CONNECTION_REQUEST_ACK
-					led_config(2, 1);
-				  //mesh_dfu_send_response((unsigned short)MESH_CONNECTION_REQUEST_ACK);
+					led_config(1, 1);
+				  mesh_dfu_send_response(p_evt->value_handle, (unsigned short)MESH_CONNECTION_REQUEST_ACK, mesh_packet.target_address);
+
 					break;
         case MESH_IMAGE_TRANSFER_SUCCESS:
 
@@ -319,6 +383,7 @@ void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
             break;
         case MESH_DISCONNECT_SERVER:
             // Error condition, server disconnecting from mesh imminently.
+						led_config(1, 1);
             break;
 
         case MESH_REQUEST_STATUS:
@@ -328,12 +393,24 @@ void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
         case MESH_START_IMAGE_TRANSFER:
             // Prepare for the transfer of the new firmware
             // MESH_START_IMAGE_TRANSFER_ACK
-
-            // Will recieve CRC & Size information here
+						led_config(2, 1);	
+								
+						// Total Image size to be recieved
+						m_image_size = ((uint32_t) *(mesh_packet.data+3) << 24) | ((uint32_t) *(mesh_packet.data+4) << 16) | ((uint32_t) *(mesh_packet.data+5) << 8) | ((uint32_t) *(mesh_packet.data+6));
+				
+						// Init image transfer variables
+						m_storage_handle_swap.block_id = DFU_BANK_1_REGION_START;
+								
+						mesh_dfu_send_response(p_evt->value_handle, (unsigned short)MESH_START_IMAGE_TRANSFER_ACK, mesh_packet.target_address);
             break;
         case MESH_DATA_IMAGE_PACKET:
             // Acknowledge & write recieved packet
             // MESH_DATA_IMAGE_PACKET_ACK
+
+						
+						app_data_process(mesh_packet.target_address, (uint8_t)p_evt->value_handle, (uint8_t *) (mesh_packet.data+3), 16);
+
+						mesh_dfu_send_response(p_evt->value_handle, (unsigned short)MESH_DATA_IMAGE_PACKET_ACK, mesh_packet.target_address);
             break;
 
         default:

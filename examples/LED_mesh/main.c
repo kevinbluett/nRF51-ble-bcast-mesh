@@ -45,8 +45,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "boards.h"
 #include "ble_advdata.h"
 #include "nrf_adv_conn.h"
-#include "ble_dfu.h"
-#include "dfu_app_handler.h"
 #include "ble_conn_params.h"
 #include "softdevice_handler.h"
 #include "timeslot_handler.h"
@@ -72,10 +70,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DFU_REV_MAJOR                        0x00                                       /** DFU Major revision number to be exposed. */
 #define DFU_REV_MINOR                        0x01                                       /** DFU Minor revision number to be exposed. */
 #define DFU_REVISION                         ((DFU_REV_MAJOR << 8) | DFU_REV_MINOR)     /** DFU Revision number to be exposed. Combined of major and minor versions. */
-
-
-
-static ble_dfu_t m_dfus;
 
 /**
 * @brief General error handler. Sets the LEDs to blink forever
@@ -168,33 +162,6 @@ static void sys_evt_dispatch(uint32_t sys_evt)
 		rbc_mesh_sys_evt_handler(sys_evt);
 }
 
-
-#ifdef BOARD_PCA10001
-/* configure button interrupt for evkits */
-static void gpiote_init(void)
-{
-    NRF_GPIO->PIN_CNF[BUTTON_0] = (GPIO_PIN_CNF_SENSE_Low << GPIO_PIN_CNF_SENSE_Pos)
-                                | (GPIO_PIN_CNF_DRIVE_S0S1 << GPIO_PIN_CNF_DRIVE_Pos)
-                                | (BUTTON_PULL << GPIO_PIN_CNF_PULL_Pos)
-                                | (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
-                                | (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos);
-    
-    NRF_GPIO->PIN_CNF[BUTTON_1] = (GPIO_PIN_CNF_SENSE_Low << GPIO_PIN_CNF_SENSE_Pos)
-                                | (GPIO_PIN_CNF_DRIVE_S0S1 << GPIO_PIN_CNF_DRIVE_Pos)
-                                | (BUTTON_PULL << GPIO_PIN_CNF_PULL_Pos)
-                                | (GPIO_PIN_CNF_INPUT_Connect << GPIO_PIN_CNF_INPUT_Pos)
-                                | (GPIO_PIN_CNF_DIR_Input << GPIO_PIN_CNF_DIR_Pos);
-    
-
-    /* GPIOTE interrupt handler normally runs in STACK_LOW priority, need to put it 
-    in APP_LOW in order to use the mesh API */
-    NVIC_SetPriority(GPIOTE_IRQn, 3);
-    
-    NVIC_EnableIRQ(GPIOTE_IRQn);
-    NRF_GPIOTE->INTENSET = GPIOTE_INTENSET_PORT_Msk;
-}
-#endif
-
 void test_app_init(void)
 {   
     nrf_gpio_cfg_output(LED_0);
@@ -233,7 +200,6 @@ static void ble_evt_dispatch(ble_evt_t * p_ble_evt)
 		//led_config(1, 1);
 		nrf_adv_conn_evt_handler(p_ble_evt);
 		ble_conn_params_on_ble_evt(p_ble_evt);
-    ble_dfu_on_ble_evt(&m_dfus, p_ble_evt);  
     //on_ble_evt(p_ble_evt);
 }
 
@@ -276,11 +242,17 @@ static void scheduler_init(void)
 
 int main(void)
 {
+		SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, 0);
+
+		led_config(1,1);
     uint32_t error_code;
-    SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, 0);
-		//APP_ERROR_CHECK(error_code);
+		ble_enable_params_t ble_enable_params;
+		rbc_mesh_init_params_t init_params;
+		uint8_t val;
+		
+    //APP_ERROR_CHECK(error_code);
     
-    ble_enable_params_t ble_enable_params;
+    
     ble_enable_params.gatts_enable_params.service_changed = 0;
     
     error_code = sd_ble_enable(&ble_enable_params);
@@ -297,7 +269,7 @@ int main(void)
     test_app_init();
 		//scheduler_init();
 	
-    rbc_mesh_init_params_t init_params;
+    
 
     init_params.access_addr = 0xA541A68F;
     init_params.adv_int_ms = 200;
@@ -318,7 +290,7 @@ int main(void)
     error_code = rbc_mesh_value_enable(4);
     APP_ERROR_CHECK(error_code);  
 
-		uint8_t val = 1;
+		val = 1;
 		rbc_mesh_value_set(1, &val, 0);
     
 		/*ble_dfu_init_t   dfus_init;
@@ -337,7 +309,7 @@ int main(void)
 		
 		//sd_nvic_EnableIRQ(SD_EVT_IRQn);
 		
-		led_config(1, 0);
+		led_config(1, 1);
     led_config(2, 0);
 		led_config(3, 0);
     led_config(4, 0);

@@ -59,9 +59,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #define TIMESLOT_END_SAFETY_MARGIN_US   (200)
-#define TIMESLOT_SLOT_LENGTH            (100000)
+#define TIMESLOT_SLOT_LENGTH            (050000)
 #define TIMESLOT_SLOT_EMERGENCY_LENGTH  (3000) /* will fit between two conn events */
-#define TIMESLOT_MAX_LENGTH             (1000000) /* 1s */
+#define TIMESLOT_MAX_LENGTH             (0500000) /* 0.5s */
 
 #if USE_SWI_FOR_PROCESSING
 #define ASYNC_EVENT_FIFO_QUEUE_SIZE (8)
@@ -403,7 +403,6 @@ static nrf_radio_signal_callback_return_param_t* radio_signal_callback(uint8_t s
                 transport_control_step();
             }
             break;
-        
         default:
             APP_ERROR_CHECK(NRF_ERROR_INVALID_STATE);
     }

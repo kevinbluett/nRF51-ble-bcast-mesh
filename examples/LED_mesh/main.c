@@ -46,8 +46,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ble_advdata.h"
 #include "nrf_adv_conn.h"
 #include "ble_conn_params.h"
+#include "app_scheduler.h"
 #include "softdevice_handler.h"
 #include "timeslot_handler.h"
+#include "pstorage.h"
+#include "hci_mem_pool.h"
 #include "bsp.h"
 #include "mesh_dfu.h"
 
@@ -158,7 +161,9 @@ void rbc_mesh_event_handler(rbc_mesh_event_t* evt)
 
 static void sys_evt_dispatch(uint32_t sys_evt)
 {
-		//led_config(2, 1);
+		if ((sys_evt == NRF_EVT_FLASH_OPERATION_SUCCESS) || (sys_evt == NRF_EVT_FLASH_OPERATION_ERROR)) {
+			pstorage_sys_event_handler(sys_evt);
+		}
 		rbc_mesh_sys_evt_handler(sys_evt);
 }
 
@@ -229,6 +234,7 @@ static void reset_prepare(void)
  */
 static void power_manage(void)
 {
+		app_sched_execute();
     uint32_t err_code = sd_app_evt_wait();
     APP_ERROR_CHECK(err_code);
 }
@@ -242,16 +248,20 @@ static void scheduler_init(void)
 
 int main(void)
 {
-		SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_20_PPM, 0);
-
-		led_config(1,1);
-    uint32_t error_code;
+		uint32_t error_code;
+	
+		SOFTDEVICE_HANDLER_INIT(NRF_CLOCK_LFCLKSRC_XTAL_250_PPM, true);
+	
+		scheduler_init();
+	
+		error_code = pstorage_init();
+		APP_ERROR_CHECK(error_code);
+    
 		ble_enable_params_t ble_enable_params;
 		rbc_mesh_init_params_t init_params;
 		uint8_t val;
-		
+	
     //APP_ERROR_CHECK(error_code);
-    
     
     ble_enable_params.gatts_enable_params.service_changed = 0;
     
@@ -267,16 +277,14 @@ int main(void)
     APP_ERROR_CHECK(error_code);
 	
     test_app_init();
-		//scheduler_init();
+		//
 	
-    
-
     init_params.access_addr = 0xA541A68F;
-    init_params.adv_int_ms = 200;
+    init_params.adv_int_ms = 150;
     init_params.channel = 38;
     init_params.handle_count = 12;
     init_params.packet_format = RBC_MESH_PACKET_FORMAT_ORIGINAL;
-    init_params.radio_mode = RBC_MESH_RADIO_MODE_BLE_1MBIT;
+    init_params.radio_mode = RBC_MESH_RADIO_MODE_250KBIT;
     
     error_code = rbc_mesh_init(init_params);
     APP_ERROR_CHECK(error_code);
@@ -309,7 +317,10 @@ int main(void)
 		
 		//sd_nvic_EnableIRQ(SD_EVT_IRQn);
 		
-		led_config(1, 1);
+		hci_mem_pool_open();
+		
+		
+		led_config(1, 0);
     led_config(2, 0);
 		led_config(3, 0);
     led_config(4, 0);
@@ -317,7 +328,6 @@ int main(void)
     /* sleep */
     for(;;)
     {
-				//app_sched_execute();
         power_manage();
     }
     

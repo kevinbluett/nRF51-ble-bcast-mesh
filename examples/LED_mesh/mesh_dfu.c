@@ -31,8 +31,14 @@ static uint16_t                     m_image_crc;                /**< Calculated 
 static uint32_t             				m_num_of_firmware_bytes_rcvd; 
 static uint32_t                     m_data_received;
 
+static pstorage_handle_t            m_storage_handle_app; 
 static pstorage_handle_t            m_storage_handle_swap;      /**< Pstorage handle for the swap area (bank 1). Bank used when updating an application or bootloader without SoftDevice. */
 static pstorage_handle_t          * mp_storage_handle_active;   /**< Pointer to the pstorage handle for the active bank for receiving of data packets. */
+
+static uint16_t m_addr;
+static uint8_t m_channel;
+static uint8_t m_memory_clear = false;
+static uint8_t m_block_write_progress = false;
 
 static uint8_t * mp_rx_buffer;
 
@@ -152,7 +158,7 @@ static uint8_t * mp_rx_buffer;
 //  * @param[in] p_dfu     DFU Service Structure.
 //  * @param[in] p_evt     Pointer to the event received from the S110 SoftDevice.
 //  */
-static void app_data_process(uint8_t addr, uint8_t packet_id, uint8_t * p_data_packet, uint32_t length) {
+static void app_data_process(int addr, uint8_t packet_id, uint8_t * p_data_packet, uint32_t length) {
     uint32_t err_code;
 
     if ((length & (sizeof(uint32_t) - 1)) != 0) {
@@ -197,7 +203,7 @@ static void app_data_process(uint8_t addr, uint8_t packet_id, uint8_t * p_data_p
          // Firmware data packet was handled successfully. And more firmware data is expected.
          m_num_of_firmware_bytes_rcvd += length;
 
-         mesh_dfu_send_response(packet_id, (unsigned short)MESH_CONNECTION_REQUEST_ACK, addr);
+         mesh_dfu_send_response(packet_id, (unsigned short)MESH_DATA_IMAGE_PACKET_ACK, addr);
     }
     else
     {
@@ -258,15 +264,20 @@ uint32_t mesh_data_pkt_handle(mesh_update_packet_t * p_packet)
 
             p_data = (uint32_t *)p_packet->params.data_packet.p_data_packet;
 
-            err_code = pstorage_raw_store(mp_storage_handle_active,
-                                          (uint8_t *)p_data,
-                                          data_length,
-                                          m_data_received);
+						pstorage_handle_t * p_dest = mp_storage_handle_active;
+            //err_code = pstorage_raw_store(mp_storage_handle_active,
+            //                              ,
+            //                              data_length,
+            //                              m_data_received);
+						uint32_t star_addr = 0x00029000;
+						
+						err_code = sd_flash_write((uint32_t *)star_addr, (uint32_t *)p_data, data_length);
+
             if (err_code != NRF_SUCCESS)
             {
                 return err_code;
             }
-
+						
             m_data_received += data_length;
 
             if (m_data_received != m_image_size)
@@ -330,6 +341,38 @@ void mesh_dfu_send_response(uint8_t channel, char one, int addr)//, uint16_t add
 	rbc_mesh_value_set(channel, resp, 28);
 }
 
+static void pstorage_callback_handler(pstorage_handle_t * p_handle,
+                                      uint8_t             op_code,
+                                      uint32_t            result,
+                                      uint8_t           * p_data,
+                                      uint32_t            data_len)
+{
+			switch (op_code)
+			{
+					case PSTORAGE_STORE_OP_CODE:
+							m_block_write_progress = false;
+							//if(result == NRF_SUCCESS) {
+								mesh_dfu_send_response(m_channel, (unsigned short)MESH_DATA_IMAGE_PACKET_ACK, m_addr);
+								int err = hci_mem_pool_rx_consume(p_data);
+								APP_ERROR_CHECK(err);
+							//}
+							
+							break;
+
+					case PSTORAGE_CLEAR_OP_CODE:
+							//if (result == NRF_SUCCESS) {
+								mesh_dfu_send_response(m_channel, (unsigned short)MESH_START_IMAGE_TRANSFER_ACK, m_addr);
+							//} else {
+							//	led_config(3, 1);
+							//}
+							m_memory_clear = false;
+							break;
+
+					default:
+							break;
+			}
+}
+	
 /**@brief     Function for the Device Firmware Update Service event handler.
  *
  * @details   This function will be called for all Device Firmware Update Service events which
@@ -352,6 +395,9 @@ void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
 		if (mesh_packet.target_address != addr) {
 			return;
 		}
+		
+		m_addr = mesh_packet.target_address;
+		m_channel = p_evt->value_handle;
 
     switch (mesh_packet.event_type)
     {
@@ -383,7 +429,7 @@ void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
             break;
         case MESH_DISCONNECT_SERVER:
             // Error condition, server disconnecting from mesh imminently.
-						led_config(1, 1);
+						led_config(1, 0);
             break;
 
         case MESH_REQUEST_STATUS:
@@ -393,24 +439,43 @@ void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
         case MESH_START_IMAGE_TRANSFER:
             // Prepare for the transfer of the new firmware
             // MESH_START_IMAGE_TRANSFER_ACK
-						led_config(2, 1);	
+				
+						if (m_memory_clear) 
+							return;
 								
 						// Total Image size to be recieved
 						m_image_size = ((uint32_t) *(mesh_packet.data+3) << 24) | ((uint32_t) *(mesh_packet.data+4) << 16) | ((uint32_t) *(mesh_packet.data+5) << 8) | ((uint32_t) *(mesh_packet.data+6));
 				
+						pstorage_module_param_t storage_module_param = {.cb = pstorage_callback_handler};
+						err_code = pstorage_raw_register(&storage_module_param, &m_storage_handle_app);
+						APP_ERROR_CHECK(err_code);
+						
 						// Init image transfer variables
+						m_storage_handle_app.block_id = DFU_BANK_0_REGION_START;
+						m_storage_handle_swap = m_storage_handle_app;
 						m_storage_handle_swap.block_id = DFU_BANK_1_REGION_START;
-								
-						mesh_dfu_send_response(p_evt->value_handle, (unsigned short)MESH_START_IMAGE_TRANSFER_ACK, mesh_packet.target_address);
+						m_mesh_state = MESH_STATE_RX_DATA_PKT;
+						
+						mp_storage_handle_active = &m_storage_handle_swap;
+						
+						//err_code = pstorage_raw_clear(&m_storage_handle_swap, DFU_IMAGE_MAX_SIZE_BANKED);
+						//APP_ERROR_CHECK(err_code);
+						m_memory_clear = false;// = true;
+						mesh_dfu_send_response(m_channel, (unsigned short)MESH_START_IMAGE_TRANSFER_ACK, m_addr);
+						
             break;
         case MESH_DATA_IMAGE_PACKET:
             // Acknowledge & write recieved packet
             // MESH_DATA_IMAGE_PACKET_ACK
+						if (m_block_write_progress) {
+							return;
+						}
 
-						
-						app_data_process(mesh_packet.target_address, (uint8_t)p_evt->value_handle, (uint8_t *) (mesh_packet.data+3), 16);
-
-						mesh_dfu_send_response(p_evt->value_handle, (unsigned short)MESH_DATA_IMAGE_PACKET_ACK, mesh_packet.target_address);
+						// Pretend processing
+						mesh_dfu_send_response(p_evt->value_handle, (unsigned short)MESH_DATA_IMAGE_PACKET_ACK, mesh_packet.target_address);			
+						m_block_write_progress = false;
+						//app_data_process(mesh_packet.target_address, (uint8_t)p_evt->value_handle, (uint8_t *) (mesh_packet.data+3), 16);
+				
             break;
 
         default:

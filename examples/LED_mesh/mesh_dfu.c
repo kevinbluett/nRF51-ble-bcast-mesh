@@ -39,6 +39,7 @@ static uint16_t m_addr;
 static uint8_t m_channel;
 static uint8_t m_memory_clear = false;
 static uint8_t m_block_write_progress = false;
+static uint8_t m_retry_count = 0;
 
 static uint8_t * mp_rx_buffer;
 
@@ -262,16 +263,16 @@ uint32_t mesh_data_pkt_handle(mesh_update_packet_t * p_packet)
             //    return err_code;
             //}
 
-            p_data = (uint32_t *)p_packet->params.data_packet.p_data_packet;
 
+            p_data = (uint32_t *)p_packet->params.data_packet.p_data_packet;
 						pstorage_handle_t * p_dest = mp_storage_handle_active;
-            //err_code = pstorage_raw_store(mp_storage_handle_active,
-            //                              ,
-            //                              data_length,
-            //                              m_data_received);
-						uint32_t star_addr = 0x00029000;
+            err_code = pstorage_raw_store(mp_storage_handle_active,
+                                          (uint8_t *)p_data,
+                                          data_length,
+                                          m_data_received);
+						//uint32_t star_addr = 0x00029000;
 						
-						err_code = sd_flash_write((uint32_t *)star_addr, (uint32_t *)p_data, data_length);
+						//err_code = sd_flash_write((uint32_t *)star_addr, (, data_length);
 
             if (err_code != NRF_SUCCESS)
             {
@@ -351,21 +352,33 @@ static void pstorage_callback_handler(pstorage_handle_t * p_handle,
 			{
 					case PSTORAGE_STORE_OP_CODE:
 							m_block_write_progress = false;
-							//if(result == NRF_SUCCESS) {
+							if(result == NRF_SUCCESS) {
+								int err = hci_mem_pool_rx_consume((uint8_t *)p_data);
+								if (err != 0) {
+									m_retry_count--;
+								}
 								mesh_dfu_send_response(m_channel, (unsigned short)MESH_DATA_IMAGE_PACKET_ACK, m_addr);
-								int err = hci_mem_pool_rx_consume(p_data);
-								APP_ERROR_CHECK(err);
-							//}
+								//APP_ERROR_CHECK(err);
+								m_retry_count = 0;
+							} else if(m_retry_count < 3) {
+								m_retry_count += 1;
+							  int err_code = pstorage_raw_store(p_handle, p_data, data_len, data_len);
+							}
 							
 							break;
 
 					case PSTORAGE_CLEAR_OP_CODE:
-							//if (result == NRF_SUCCESS) {
+							if (result == NRF_SUCCESS) {
 								mesh_dfu_send_response(m_channel, (unsigned short)MESH_START_IMAGE_TRANSFER_ACK, m_addr);
-							//} else {
-							//	led_config(3, 1);
-							//}
-							m_memory_clear = false;
+								m_memory_clear = false;
+							} else if (m_retry_count < 3) {
+								int err_code = pstorage_raw_clear(&m_storage_handle_swap, DFU_IMAGE_MAX_SIZE_BANKED);
+								APP_ERROR_CHECK(err_code);
+								m_retry_count++;
+							} else {
+								led_config(3, 1);
+								m_memory_clear = false;
+							}
 							break;
 
 					default:
@@ -425,7 +438,9 @@ void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
             // MESH_IMAGE_ACTIVATE_ACK
 
             // Switch to bootloader & request BANK swap
-
+						led_config(1, 0);
+						led_config(2, 1);
+						led_config(3, 1);
             break;
         case MESH_DISCONNECT_SERVER:
             // Error condition, server disconnecting from mesh imminently.
@@ -458,9 +473,9 @@ void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
 						
 						mp_storage_handle_active = &m_storage_handle_swap;
 						
-						//err_code = pstorage_raw_clear(&m_storage_handle_swap, DFU_IMAGE_MAX_SIZE_BANKED);
-						//APP_ERROR_CHECK(err_code);
-						m_memory_clear = false;// = true;
+						m_memory_clear = true;
+						err_code = pstorage_raw_clear(&m_storage_handle_swap, DFU_IMAGE_MAX_SIZE_BANKED);
+						APP_ERROR_CHECK(err_code);
 						mesh_dfu_send_response(m_channel, (unsigned short)MESH_START_IMAGE_TRANSFER_ACK, m_addr);
 						
             break;
@@ -473,8 +488,8 @@ void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
 
 						// Pretend processing
 						mesh_dfu_send_response(p_evt->value_handle, (unsigned short)MESH_DATA_IMAGE_PACKET_ACK, mesh_packet.target_address);			
-						m_block_write_progress = false;
-						//app_data_process(mesh_packet.target_address, (uint8_t)p_evt->value_handle, (uint8_t *) (mesh_packet.data+3), 16);
+						m_block_write_progress = true;
+						app_data_process(mesh_packet.target_address, (uint8_t)p_evt->value_handle, (uint8_t *) (mesh_packet.data+3), 16);
 				
             break;
 

@@ -20,6 +20,7 @@
 #include "rbc_mesh.h"
 #include "mesh_dfu.h"
 #include "led_config.h"
+#include "main.h"
 
 static mesh_state_t                 m_mesh_state;                /**< Current DFU state. */
 static uint32_t                     m_image_size;               /**< Size of the image that will be transmitted. */
@@ -191,6 +192,16 @@ static void app_data_process(int addr, uint8_t packet_id, uint8_t * p_data_packe
 		mesh_pkt.params.data_packet.p_data_packet = (uint32_t*)mp_rx_buffer;
     
     err_code = mesh_data_pkt_handle(&mesh_pkt);
+		
+		if (err_code == NRF_ERROR_NO_MEM) { 
+			for (int i = 0; i < 3; i++) {
+				if (err_code == NRF_ERROR_NO_MEM) {
+						//Let's wait a moment and give that another go
+						nrf_delay_ms(400);
+						err_code = mesh_data_pkt_handle(&mesh_pkt);
+				}
+			}
+		}
 
     if (err_code == NRF_SUCCESS)
     {
@@ -207,12 +218,15 @@ static void app_data_process(int addr, uint8_t packet_id, uint8_t * p_data_packe
          mesh_dfu_send_response(packet_id, (unsigned short)MESH_DATA_IMAGE_PACKET_ACK, addr);
     }
     else
-    {
+    {	
 				//Let's pretend errors don't exist for the time being
         uint32_t hci_error = hci_mem_pool_rx_consume(mp_rx_buffer);
         if (hci_error != NRF_SUCCESS)
         {
-					// Process error
+					// Show error
+					led_config(1, 1);
+					led_config(2, 1);
+					led_config(3, 1);
         }
     }
 }
@@ -441,6 +455,7 @@ void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
 						led_config(1, 0);
 						led_config(2, 1);
 						led_config(3, 1);
+						bootloader_start();
             break;
         case MESH_DISCONNECT_SERVER:
             // Error condition, server disconnecting from mesh imminently.
@@ -454,7 +469,7 @@ void mesh_dfu_packet_handler(rbc_mesh_event_t * p_evt)
         case MESH_START_IMAGE_TRANSFER:
             // Prepare for the transfer of the new firmware
             // MESH_START_IMAGE_TRANSFER_ACK
-				
+						
 						if (m_memory_clear) 
 							return;
 								

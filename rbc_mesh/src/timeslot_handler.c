@@ -311,9 +311,10 @@ static nrf_radio_signal_callback_return_param_t* radio_signal_callback(uint8_t s
     static uint32_t requested_extend_time = 0;
     static uint32_t successful_extensions = 0;  
     static uint8_t noise_val = 0x5F;
+		static uint32_t last_rtc_value=0;
     SET_PIN(PIN_SYNC_TIME);
     
-    uint64_t time_now = 0;
+    static uint64_t time_now = 0;
     
     switch (sig)
     {
@@ -343,13 +344,27 @@ static nrf_radio_signal_callback_return_param_t* radio_signal_callback(uint8_t s
             NVIC_SetPriority(SWI0_IRQn, 3);
 #endif       
         
-            /* sample RTC timer for trickle timing */
-            time_now = NRF_RTC0->COUNTER - g_start_time_ref;
-            
-            /* scale to become us */     
-            time_now = ((time_now << 15) / 1000);
-            
-            transport_control_timeslot_begin(time_now);
+						/* sample RTC timer for trickle timing */
+						uint32_t rtc_time = NRF_RTC0->COUNTER;
+
+						/*First time the offset should be added*/
+						if(last_rtc_value==0)
+								last_rtc_value=g_start_time_ref;
+
+						/* Calculate delta rtc time */
+						uint32_t delta_rtc_time;
+						if(last_rtc_value>rtc_time)
+								delta_rtc_time=0xFFFFFF-last_rtc_value+rtc_time;
+						else
+								delta_rtc_time=rtc_time-last_rtc_value;
+						/* Store last rtc time */
+						last_rtc_value=rtc_time;
+
+
+						/* scale to become us */
+						time_now += ((delta_rtc_time << 15) / 1000);
+
+						transport_control_timeslot_begin(time_now);
         
             break;
         
